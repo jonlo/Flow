@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import DropCube from './CubeGeneration/CubeGenerator'
+import {CubeMapGenerator} from './CubeGeneration/CubeGenerator'
 
 'use strict';
 
@@ -9,8 +9,8 @@ var container,
     scene,
     renderer,
     controls,
-    cubeLevels,
-    cubeMap;
+    cubeMapGenerator,
+    levels;
 
 main();
 
@@ -40,90 +40,10 @@ function initScene() {
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.update() must be called after any manual changes to the camera's transform
     controls.update();
-    var dropCube = new DropCube(0x00ff00, new THREE.Vector2(0, 0));
-    scene.add(dropCube.cube);
-    var cubeLevelZero = [dropCube];
-    cubeLevels = [];
-    cubeMap = [dropCube];
-    cubeLevels.push(cubeLevelZero);
-    window.dropCube = dropCube;
-    window.scene = scene;
-    generateCubeLevels(10);
-    Window.cubeMap = cubeMap;
-}
-
-function generateCubeLevels(levels) {
-    for (let index = 0; index < levels; index++) {
-        generateCubesForLevel(index);
-    }
-}
-
-function generateCubesForLevel(level) {
-    var cubes = cubeLevels[level];
-    var newLevelCubes = [];
-    cubes.forEach(cube => {
-        var newCubes = addNeighbours(cube);
-        newCubes.forEach(cube => {
-            newLevelCubes.push(cube);
-        });
-        newCubes.forEach(dropCube => {
-            scene.add(dropCube.cube);
-        });
-    });
-    cubeLevels.push(newLevelCubes);
-}
-
-function addNeighbours(dropCube) {
-    var cubes = [];
-    var leftCubePosition = new THREE.Vector2(dropCube.mapPosition.x - 1, dropCube.mapPosition.y);
-    var leftCube = getCubeAtMapPosition(leftCubePosition);
-    if (!leftCube) {
-        let newNeighbour = new DropCube(0x00ffff, leftCubePosition);
-        cubes.push(newNeighbour);
-        cubeMap.push(newNeighbour);
-        console.log("cube pos: " + newNeighbour.mapPosition.x + " " + newNeighbour.mapPosition.y);
-    }
-
-    var rightCubePosition = new THREE.Vector2(dropCube.mapPosition.x + 1, dropCube.mapPosition.y);
-    var rightCube = getCubeAtMapPosition(rightCubePosition);
-    if (!rightCube) {
-        let newNeighbour = new DropCube(0x00ffff, rightCubePosition);
-        cubes.push(newNeighbour);
-        cubeMap.push(newNeighbour);
-        console.log("cube pos: " + newNeighbour.mapPosition.x + " " + newNeighbour.mapPosition.y);
-
-    }
-
-    var frontCubePosition = new THREE.Vector2(dropCube.mapPosition.x, dropCube.mapPosition.y + 1);
-    var frontCube = getCubeAtMapPosition(frontCubePosition);
-    if (!frontCube) {
-        let newNeighbour = new DropCube(0x00ffff, frontCubePosition);
-        cubes.push(newNeighbour);
-        cubeMap.push(newNeighbour);
-        console.log("cube pos: " + newNeighbour.mapPosition.x + " " + newNeighbour.mapPosition.y);
-
-    }
-
-
-    var rearCubePosition = new THREE.Vector2(dropCube.mapPosition.x, dropCube.mapPosition.y - 1);
-    var rearCube = getCubeAtMapPosition(rearCubePosition);
-    if (!rearCube) {
-        let newNeighbour = new DropCube(0x00ffff, rearCubePosition);
-        cubes.push(newNeighbour);
-        cubeMap.push(newNeighbour);
-        console.log("cube pos: " + newNeighbour.mapPosition.x + " " + newNeighbour.mapPosition.y);
-
-    }
-
-    return cubes;
-}
-
-function getCubeAtMapPosition(mapPosition) {
-    var cubeAtPos = cubeMap.find(dropCube => dropCube.mapPosition.x === mapPosition.x &&  dropCube.mapPosition.y === mapPosition.y) ;
-    if(cubeAtPos){
-        console.log("There is a cube at "+mapPosition.x +" " +mapPosition.y);
-    }
-    return cubeAtPos;
+    levels = 5;
+    cubeMapGenerator = new CubeMapGenerator(scene);
+    cubeMapGenerator.generateCubeMap(levels);
+    controls.target = new THREE.Vector3(levels/2,levels/2,levels/2);
 }
 
 function render() {
