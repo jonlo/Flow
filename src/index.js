@@ -23,7 +23,6 @@ function initScene() {
     // dom
     container = document.createElement('div');
     window.addEventListener('resize', onWindowResize, false);
-    container.addEventListener('mousedown', mouseDown);
     document.body.appendChild(container);
 
     // renderer
@@ -47,7 +46,7 @@ function initScene() {
     var centerCubeIndex = Math.floor(levels/2);
     var centerCube = cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
     cubeMapGenerator.setCenterCube (centerCube);
-    centerCube.setWater(10);
+    centerCube.setContent(100);
     window.cubeMapGen = cubeMapGenerator;
 }
 
@@ -71,9 +70,5 @@ function onWindowResize() {
 
 }
 
-function mouseDown(e) {
-    var mousePos = new THREE.Vector2((e.clientX / window.innerWidth) * 2 - 1, - (e.clientY / window.innerHeight) * 2 + 1);
-
-}
 
 
