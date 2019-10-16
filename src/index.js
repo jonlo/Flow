@@ -40,14 +40,20 @@ function initScene() {
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.update() must be called after any manual changes to the camera's transform
     controls.update();
-    levels = 5;
+    levels = 14;
     cubeMapGenerator = new CubeMapGenerator(scene);
     cubeMapGenerator.generateCubeMap(levels);
     controls.target = new THREE.Vector3(levels/2,levels/2,levels/2);
+    var centerCubeIndex = Math.floor(levels/2);
+    var centerCube = cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
+    cubeMapGenerator.setCenterCube (centerCube);
+    centerCube.setWater(10);
+    window.cubeMapGen = cubeMapGenerator;
 }
 
 function render() {
     renderer.render(scene, camera);
+    cubeMapGenerator.update();
 }
 
 // animate            
