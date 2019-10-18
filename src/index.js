@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {CubeMapGenerator} from './CubeGeneration/CubeGenerator'
+import {CubeMap} from './CubeGeneration/CubeMap'
 
 'use strict';
 
@@ -9,7 +9,7 @@ var container,
     scene,
     renderer,
     controls,
-    cubeMapGenerator,
+    cubeMap,
     levels;
 
 main();
@@ -39,21 +39,21 @@ function initScene() {
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.update() must be called after any manual changes to the camera's transform
     controls.update();
-    levels = 14;
-    cubeMapGenerator = new CubeMapGenerator(scene);
-    cubeMapGenerator.generateCubeMap(levels);
+    levels = 20;
+    cubeMap = new CubeMap(scene);
+    cubeMap.generateCubeMap(levels);
     controls.target = new THREE.Vector3(levels/2,levels/2,levels/2);
-    var centerCubeIndex = Math.floor(cubeMapGenerator.cubeMap.length * Math.random());
-    console.log("total cubes = "+cubeMapGenerator.cubeMap.length+" selected index :" +centerCubeIndex);
-    var centerCube = cubeMapGenerator.cubeMap[centerCubeIndex]; //cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
-    cubeMapGenerator.setCenterCube (centerCube);
+    var centerCubeIndex = Math.floor(cubeMap.cubes.length * Math.random());
+    console.log("total cubes = "+cubeMap.cubes.length+" selected index :" +centerCubeIndex);
+    var centerCube = cubeMap.cubes[centerCubeIndex]; //cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
+    cubeMap.setCenterCube (centerCube);
     centerCube.setContent(5000);
-    window.cubeMapGen = cubeMapGenerator;
+    window.cubeMap = cubeMap;
 }
 
 function render() {
     renderer.render(scene, camera);
-    cubeMapGenerator.update();
+    cubeMap.update();
 }
 
 // animate            

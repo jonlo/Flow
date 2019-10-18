@@ -9,8 +9,8 @@ const depth = 1;
 
 class DropCube {
 
-    constructor(color, mapPosition, flow, cubeMapGenerator, cubeIndex) {
-        this.cubeMapGenerator = cubeMapGenerator;
+    constructor(color, mapPosition, flow, cubeMap, cubeIndex) {
+        this.cubeMap = cubeMap;
         this.cubeIndex = cubeIndex;
         this.createCube = function (width, height, depth, position, color) {
             var geometry = new BoxGeometry(width, height, depth);
@@ -48,17 +48,17 @@ class DropCube {
         var neighbors = [];
 
         var topCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y + 1, this.mapPosition.z);
-        var topCube = this.cubeMapGenerator.getCubeAtMapPosition(topCubePosition);
+        var topCube = this.cubeMap.getCubeAtMapPosition(topCubePosition);
         var frontCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y, this.mapPosition.z + 1);
-        var frontCube = this.cubeMapGenerator.getCubeAtMapPosition(frontCubePosition);
+        var frontCube = this.cubeMap.getCubeAtMapPosition(frontCubePosition);
         var rearCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y, this.mapPosition.z - 1);
-        var rearCube = this.cubeMapGenerator.getCubeAtMapPosition(rearCubePosition);
+        var rearCube = this.cubeMap.getCubeAtMapPosition(rearCubePosition);
         var rightCubePosition = new Vector3(this.mapPosition.x + 1, this.mapPosition.y, this.mapPosition.z);
-        var rightCube = this.cubeMapGenerator.getCubeAtMapPosition(rightCubePosition);
+        var rightCube = this.cubeMap.getCubeAtMapPosition(rightCubePosition);
         var leftCubePosition = new Vector3(this.mapPosition.x - 1, this.mapPosition.y, this.mapPosition.z);
-        var leftCube = this.cubeMapGenerator.getCubeAtMapPosition(leftCubePosition);
+        var leftCube = this.cubeMap.getCubeAtMapPosition(leftCubePosition);
         var bottomCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y - 1, this.mapPosition.z);
-        var bottomCube = this.cubeMapGenerator.getCubeAtMapPosition(bottomCubePosition);
+        var bottomCube = this.cubeMap.getCubeAtMapPosition(bottomCubePosition);
 
         if (frontCube) {
             neighbors.push(frontCube);
@@ -87,10 +87,10 @@ class DropCube {
 
 }
 
-class CubeMapGenerator {
+class CubeMap {
 
     constructor(scene) {
-        this.cubeMap = [];
+        this.cubes = [];
         this.scene = scene;
         this.centerCube = null;
         this.cubeIndex = 0;
@@ -99,10 +99,10 @@ class CubeMapGenerator {
             for (let indexX = 0; indexX < levels; indexX++) {
                 for (let indexY = 0; indexY < levels; indexY++) {
                     for (let indexZ = 0; indexZ < levels; indexZ++) {
-                        var color = 0xff00ff;
+                        var color =  0xffffff;
                         let dropCube = new DropCube(color, new Vector3(indexX, indexY, indexZ), 0.7, this, this.cubeIndex);
                         this.cubeIndex++;
-                        this.cubeMap.push(dropCube);
+                        this.cubes.push(dropCube);
                         this.scene.add(dropCube.cube);
                     }
                 }
@@ -110,14 +110,14 @@ class CubeMapGenerator {
         };
 
         this.getCubeAtMapPosition = function (mapPosition) {
-            var cubeAtPos = this.cubeMap.find(dropCube => dropCube.mapPosition.x === mapPosition.x && dropCube.mapPosition.y === mapPosition.y && dropCube.mapPosition.z === mapPosition.z);
+            var cubeAtPos = this.cubes.find(dropCube => dropCube.mapPosition.x === mapPosition.x && dropCube.mapPosition.y === mapPosition.y && dropCube.mapPosition.z === mapPosition.z);
             return cubeAtPos;
         };
 
     }
 
     update() {
-        var cubes = this.cubeMap.filter(cube => cube.content > 1);
+        var cubes = this.cubes.filter(cube => cube.content > 1);
         cubes.sort(this.compareContent);
         cubes.forEach(cube => {
             cube.update();
@@ -141,7 +141,7 @@ class CubeMapGenerator {
 
 }
 export {
-    CubeMapGenerator,
+    CubeMap,
     DropCube,
 }
 
