@@ -9,8 +9,9 @@ const depth = 1;
 
 class DropCube {
 
-    constructor(color, mapPosition, flow, cubeMapGenerator) {
+    constructor(color, mapPosition, flow, cubeMapGenerator, cubeIndex) {
         this.cubeMapGenerator = cubeMapGenerator;
+        this.cubeIndex = cubeIndex;
         this.createCube = function (width, height, depth, position, color) {
             var geometry = new BoxGeometry(width, height, depth);
             var material = new MeshBasicMaterial({ color: color, transparent: true });
@@ -21,20 +22,19 @@ class DropCube {
 
         this.setContent = function (value) {
             this.content = value;
-            this.cube.material.opacity = value * 0.1;
+            this.cube.material.opacity = value * 0.08;
         }
 
         this.updateCube = function () {
-            if (this.content < 0.2) { return; }
-            var neighbors = this.getNeighborgs(this);
-            neighbors.forEach(neighbor => {
-                var currentContent = this.content - neighbor.flow;
-                if (currentContent > 0.2 && this.content > neighbor.content) {
-                    neighbor.setContent(neighbor.content + neighbor.flow);
-                    this.setContent(currentContent);
-                }
-            });
+            var neighbors = this.getNeighbors(this);
+            var neighbourIndex = Math.floor(neighbors.length * Math.random());
+            var neighbor = neighbors[neighbourIndex];
+            var currentContent = this.content - neighbor.flow;
 
+            if (this.content > neighbor.content) {
+                neighbor.setContent(neighbor.content + neighbor.flow);
+                this.setContent(currentContent);
+            }
         }
 
         var position = new Vector3(mapPosition.x, mapPosition.y, mapPosition.z);
@@ -44,43 +44,40 @@ class DropCube {
         this.flow = flow;
     }
 
-    getNeighborgs() {
+    getNeighbors() {
         var neighbors = [];
-        var rightCubePosition = new Vector3(this.mapPosition.x + 1, this.mapPosition.y, this.mapPosition.z);
-        var rightCube = this.cubeMapGenerator.getCubeAtMapPosition(rightCubePosition);
-        if (rightCube) {
-            neighbors.push(rightCube);
-        }
-        var leftCubePosition = new Vector3(this.mapPosition.x - 1, this.mapPosition.y, this.mapPosition.z);
-        var leftCube = this.cubeMapGenerator.getCubeAtMapPosition(leftCubePosition);
-        if (leftCube) {
-            neighbors.push(leftCube);
-        }
 
         var topCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y + 1, this.mapPosition.z);
         var topCube = this.cubeMapGenerator.getCubeAtMapPosition(topCubePosition);
-        if (topCube) {
-            neighbors.push(topCube);
-        }
-
-        var bottomCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y - 1, this.mapPosition.z);
-        var bottomCube = this.cubeMapGenerator.getCubeAtMapPosition(bottomCubePosition);
-        if (bottomCube) {
-            neighbors.push(bottomCube);
-        }
-
         var frontCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y, this.mapPosition.z + 1);
         var frontCube = this.cubeMapGenerator.getCubeAtMapPosition(frontCubePosition);
+        var rearCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y, this.mapPosition.z - 1);
+        var rearCube = this.cubeMapGenerator.getCubeAtMapPosition(rearCubePosition);
+        var rightCubePosition = new Vector3(this.mapPosition.x + 1, this.mapPosition.y, this.mapPosition.z);
+        var rightCube = this.cubeMapGenerator.getCubeAtMapPosition(rightCubePosition);
+        var leftCubePosition = new Vector3(this.mapPosition.x - 1, this.mapPosition.y, this.mapPosition.z);
+        var leftCube = this.cubeMapGenerator.getCubeAtMapPosition(leftCubePosition);
+        var bottomCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y - 1, this.mapPosition.z);
+        var bottomCube = this.cubeMapGenerator.getCubeAtMapPosition(bottomCubePosition);
+
         if (frontCube) {
             neighbors.push(frontCube);
         }
-
-        var rearCubePosition = new Vector3(this.mapPosition.x, this.mapPosition.y, this.mapPosition.z - 1);
-        var rearCube = this.cubeMapGenerator.getCubeAtMapPosition(rearCubePosition);
         if (rearCube) {
             neighbors.push(rearCube);
         }
-
+        if (rightCube) {
+            neighbors.push(rightCube);
+        }
+        if (leftCube) {
+            neighbors.push(leftCube);
+        }
+        if (topCube) {
+            neighbors.push(topCube);
+        }
+        if (bottomCube) {
+            neighbors.push(bottomCube);
+        }
         return neighbors;
     }
 
@@ -96,14 +93,15 @@ class CubeMapGenerator {
         this.cubeMap = [];
         this.scene = scene;
         this.centerCube = null;
-
+        this.cubeIndex = 0;
         this.generateCubeMap = function (levels) {
             this.levels = levels;
             for (let indexX = 0; indexX < levels; indexX++) {
                 for (let indexY = 0; indexY < levels; indexY++) {
                     for (let indexZ = 0; indexZ < levels; indexZ++) {
                         var color = 0xff00ff;
-                        let dropCube = new DropCube(color, new Vector3(indexX, indexY, indexZ), Math.random() * 0.5, this);
+                        let dropCube = new DropCube(color, new Vector3(indexX, indexY, indexZ), 0.7, this, this.cubeIndex);
+                        this.cubeIndex++;
                         this.cubeMap.push(dropCube);
                         this.scene.add(dropCube.cube);
                     }
@@ -116,33 +114,30 @@ class CubeMapGenerator {
             return cubeAtPos;
         };
 
-        this.compare = function (a, b) {
-            if (a.flow > b.flow) {
-                return -1;
-            }
-            if (a.flow < b.flow) {
-                return 1;
-            }
-            return 0;
-        }
     }
 
     update() {
-        this.cubeMap.sort(this.compare);
-        this.cubeMap.forEach(cube => {
+        var cubes = this.cubeMap.filter(cube => cube.content > 1);
+        cubes.sort(this.compareContent);
+        cubes.forEach(cube => {
             cube.update();
         });
+
+    }
+
+    compareContent(a, b) {
+        if (a.content < b.content) {
+            return -1;
+        }
+        if (a.content > b.content) {
+            return 1;
+        }
+        return 0;
     }
 
     setCenterCube(cube) {
         this.centerCube = cube;
-        var color = 0xff0000;
-        //this.centerCube.cube.material.color = color;
     }
-
-
-
-
 
 }
 export {

@@ -43,10 +43,11 @@ function initScene() {
     cubeMapGenerator = new CubeMapGenerator(scene);
     cubeMapGenerator.generateCubeMap(levels);
     controls.target = new THREE.Vector3(levels/2,levels/2,levels/2);
-    var centerCubeIndex = Math.floor(levels/2);
-    var centerCube = cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
+    var centerCubeIndex = Math.floor(cubeMapGenerator.cubeMap.length * Math.random());
+    console.log("total cubes = "+cubeMapGenerator.cubeMap.length+" selected index :" +centerCubeIndex);
+    var centerCube = cubeMapGenerator.cubeMap[centerCubeIndex]; //cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
     cubeMapGenerator.setCenterCube (centerCube);
-    centerCube.setContent(100);
+    centerCube.setContent(5000);
     window.cubeMapGen = cubeMapGenerator;
 }
 
