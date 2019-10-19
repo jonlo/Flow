@@ -39,7 +39,7 @@ function initScene() {
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.update() must be called after any manual changes to the camera's transform
     controls.update();
-    levels = 21;
+    levels = 15;
     cubeMap = new CubeMap(scene);
     cubeMap.generateCubeMap(levels,0.5,1);
     controls.target = new THREE.Vector3(levels / 2, levels / 2, levels / 2);

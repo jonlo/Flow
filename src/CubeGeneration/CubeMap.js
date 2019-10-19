@@ -27,16 +27,11 @@ class DropCube {
             this.cube.material.opacity = value * 0.08;
         }
 
-        this.updateCube = function () {
-            var neighbors = this.getNeighbors(this);
-            var neighbourIndex = Math.floor(neighbors.length * Math.random());
-            var neighbor = neighbors[neighbourIndex];
-            var currentContent = this.content - neighbor.flow;
-
-            if (this.content > neighbor.content) {
-                neighbor.setContent(neighbor.content + neighbor.flow);
-                this.setContent(currentContent);
-            }
+        this.getNeighborsPromise = function () {
+            return new Promise(resolve => {
+                var neighbor = this.getNeighbors(this);
+                resolve(neighbor);
+            });
         }
 
         var position = new Vector3(mapPosition.x, mapPosition.y, mapPosition.z);
@@ -44,6 +39,23 @@ class DropCube {
         this.mapPosition = mapPosition;
         this.setContent(0);
         this.flow = flow;
+    }
+
+    update() {
+        this.updateAsync();
+    }
+
+    async updateAsync() {
+        console.log('calling');
+        var neighbors = await this.getNeighborsPromise(this);
+        var neighbourIndex = Math.floor(neighbors.length * Math.random());
+        var neighbor = neighbors[neighbourIndex];
+        var currentContent = this.content - neighbor.flow;
+
+        if (this.content > neighbor.content) {
+            neighbor.setContent(neighbor.content + neighbor.flow);
+            this.setContent(currentContent);
+        }
     }
 
     getNeighbors() {
@@ -83,10 +95,6 @@ class DropCube {
         return neighbors;
     }
 
-    update() {
-        this.updateCube();
-    }
-
 }
 
 class CubeMap {
@@ -96,7 +104,7 @@ class CubeMap {
         this.scene = scene;
         this.centerCube = null;
         this.cubeIndex = 0;
-        this.generateCubeMap = function (levels,flow,minShareValue) {
+        this.generateCubeMap = function (levels, flow, minShareValue) {
             this.levels = levels;
             this.flow = flow;
             this.minShareValue = minShareValue;
@@ -145,7 +153,7 @@ class CubeMap {
 
     createCubeMapHelper() {
         var box = new Box3();
-        box.setFromCenterAndSize(new Vector3(this.levels / 2, this.levels / 2, this.levels / 2), new Vector3(this.levels, this.levels, this.levels));
+        box.setFromCenterAndSize(new Vector3((this.levels / 2) - 0.5, (this.levels / 2) - 0.5,(this.levels / 2) - 0.5), new Vector3(this.levels, this.levels, this.levels));
         var helper = new Box3Helper(box, 0xffff00);
         this.scene.add(helper);
         this.box = box;
