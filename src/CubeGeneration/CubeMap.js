@@ -2,6 +2,8 @@ import { Vector3 } from 'three';
 import { BoxGeometry } from 'three';
 import { MeshBasicMaterial } from 'three';
 import { Mesh } from 'three';
+import { Box3 } from 'three';
+import { Box3Helper } from 'three';
 
 const width = 1;
 const height = 1;
@@ -94,13 +96,15 @@ class CubeMap {
         this.scene = scene;
         this.centerCube = null;
         this.cubeIndex = 0;
-        this.generateCubeMap = function (levels) {
+        this.generateCubeMap = function (levels,flow,minShareValue) {
             this.levels = levels;
+            this.flow = flow;
+            this.minShareValue = minShareValue;
             for (let indexX = 0; indexX < levels; indexX++) {
                 for (let indexY = 0; indexY < levels; indexY++) {
                     for (let indexZ = 0; indexZ < levels; indexZ++) {
-                        var color =  0xffffff;
-                        let dropCube = new DropCube(color, new Vector3(indexX, indexY, indexZ), 0.7, this, this.cubeIndex);
+                        var color = 0xffffff;
+                        let dropCube = new DropCube(color, new Vector3(indexX, indexY, indexZ), flow, this, this.cubeIndex);
                         this.cubeIndex++;
                         this.cubes.push(dropCube);
                         this.scene.add(dropCube.cube);
@@ -117,7 +121,7 @@ class CubeMap {
     }
 
     update() {
-        var cubes = this.cubes.filter(cube => cube.content > 1);
+        var cubes = this.cubes.filter(cube => cube.content > this.minShareValue);
         cubes.sort(this.compareContent);
         cubes.forEach(cube => {
             cube.update();
@@ -135,8 +139,16 @@ class CubeMap {
         return 0;
     }
 
-    setCenterCube(cube) {
-        this.centerCube = cube;
+    setStartCube(cube) {
+        this.startCube = cube;
+    }
+
+    createCubeMapHelper() {
+        var box = new Box3();
+        box.setFromCenterAndSize(new Vector3(this.levels / 2, this.levels / 2, this.levels / 2), new Vector3(this.levels, this.levels, this.levels));
+        var helper = new Box3Helper(box, 0xffff00);
+        this.scene.add(helper);
+        this.box = box;
     }
 
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {CubeMap} from './CubeGeneration/CubeMap'
+import { CubeMap } from './CubeGeneration/CubeMap'
 
 'use strict';
 
@@ -39,16 +39,18 @@ function initScene() {
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.update() must be called after any manual changes to the camera's transform
     controls.update();
-    levels = 20;
+    levels = 21;
     cubeMap = new CubeMap(scene);
-    cubeMap.generateCubeMap(levels);
-    controls.target = new THREE.Vector3(levels/2,levels/2,levels/2);
-    var centerCubeIndex = Math.floor(cubeMap.cubes.length * Math.random());
-    console.log("total cubes = "+cubeMap.cubes.length+" selected index :" +centerCubeIndex);
-    var centerCube = cubeMap.cubes[centerCubeIndex]; //cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
-    cubeMap.setCenterCube (centerCube);
-    centerCube.setContent(5000);
+    cubeMap.generateCubeMap(levels,0.5,1);
+    controls.target = new THREE.Vector3(levels / 2, levels / 2, levels / 2);
+    cubeMap.createCubeMapHelper(levels);
+    var startCubeIndex = Math.floor(cubeMap.cubes.length * Math.random());
+    console.log("total cubes = " + cubeMap.cubes.length + " selected index :" + startCubeIndex);
+    var startCube = cubeMap.cubes[startCubeIndex]; //cubeMapGenerator.getCubeAtMapPosition(new THREE.Vector3(centerCubeIndex,centerCubeIndex,centerCubeIndex));
+    cubeMap.setStartCube(startCubeIndex);
+    startCube.setContent(5000);
     window.cubeMap = cubeMap;
+    fitCameraToSelection(camera,controls,cubeMap.box);
 }
 
 function render() {
@@ -71,5 +73,29 @@ function onWindowResize() {
 
 }
 
-
-
+function fitCameraToSelection( camera, controls, box, fitOffset = 2.2 ) {
+  
+    const size = box.getSize( new THREE.Vector3() );
+    const center = box.getCenter( new THREE.Vector3() );
+    const maxSize = Math.max( size.x, size.y, size.z );
+    const fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * camera.fov / 360 ) );
+    const fitWidthDistance = fitHeightDistance / camera.aspect;
+    const distance = fitOffset * Math.max( fitHeightDistance, fitWidthDistance );
+    
+    const direction = controls.target.clone()
+      .sub( camera.position )
+      .normalize()
+      .multiplyScalar( distance );
+  
+    controls.maxDistance = distance * 10;
+    controls.target.copy( center );
+    
+    camera.near = distance / 100;
+    camera.far = distance * 100;
+    camera.updateProjectionMatrix();
+  
+    camera.position.copy( controls.target ).sub(direction);
+    
+    controls.update();
+    
+  }
