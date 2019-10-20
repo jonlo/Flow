@@ -1,2 +1,2 @@
 # Flow
-Threejs side project
+Threejs simple data flow example
