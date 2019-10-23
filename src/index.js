@@ -73,7 +73,7 @@ function onWindowResize() {
 
 }
 
-function fitCameraToSelection( camera, controls, box, fitOffset = 2.2 ) {
+function fitCameraToSelection( camera, controls, box, fitOffset = 2) {
   
     const size = box.getSize( new THREE.Vector3() );
     const center = box.getCenter( new THREE.Vector3() );
