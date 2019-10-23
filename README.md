@@ -1,4 +1,4 @@
 # Flow
 Threejs simple data flow example
 
-https://jonlo.github.io/Flow/
+https://unruffled-sammet-fd5819.netlify.com/
