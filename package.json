@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/jonlo/Drop#readme",
   "dependencies": {
-    "three": "^0.109.0"
+    "three": "^0.137.0"
   },
   "devDependencies": {
     "install": "^0.13.0",
